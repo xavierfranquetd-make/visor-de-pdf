@@ -1,0 +1,259 @@
+/* Google Drive PDF Viewer - Estilos */
+
+.gdrive-pdf-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.gdrive-pdf-item {
+    margin-bottom: 40px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.gdrive-pdf-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gdrive-pdf-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.gdrive-pdf-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    flex: 1;
+    min-width: 200px;
+}
+
+.gdrive-pdf-date {
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.gdrive-pdf-viewer {
+    width: 100%;
+    background: #f5f5f5;
+    position: relative;
+    min-height: 600px;
+}
+
+.gdrive-pdf-iframe {
+    border: none;
+    display: block;
+    background: white;
+}
+
+/* Mensajes de error y vacío */
+.gdrive-error,
+.gdrive-empty {
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.gdrive-error {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.gdrive-empty {
+    background: #ffffed;
+    color: #666;
+    border: 1px solid #e6e6c5;
+}
+
+/* Loading state */
+.gdrive-pdf-viewer::before {
+    content: 'Cargando PDF...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-size: 16px;
+    z-index: 0;
+}
+
+.gdrive-pdf-iframe {
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gdrive-pdf-container {
+        padding: 10px 0;
+    }
+    
+    .gdrive-pdf-item {
+        margin-bottom: 30px;
+    }
+    
+    .gdrive-pdf-header {
+        padding: 15px;
+    }
+    
+    .gdrive-pdf-title {
+        font-size: 18px;
+    }
+    
+    .gdrive-pdf-date {
+        font-size: 13px;
+    }
+    
+    .gdrive-pdf-viewer {
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gdrive-pdf-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .gdrive-pdf-title {
+        font-size: 16px;
+    }
+    
+    .gdrive-pdf-viewer {
+        min-height: 300px;
+    }
+}
+
+/* Animación de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gdrive-pdf-item {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.gdrive-pdf-item:nth-child(1) { animation-delay: 0.1s; }
+.gdrive-pdf-item:nth-child(2) { animation-delay: 0.2s; }
+.gdrive-pdf-item:nth-child(3) { animation-delay: 0.3s; }
+.gdrive-pdf-item:nth-child(4) { animation-delay: 0.4s; }
+.gdrive-pdf-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Botón de refrescar caché */
+.gdrive-refresh-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.gdrive-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.gdrive-refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.gdrive-refresh-btn:active {
+    transform: translateY(0);
+}
+
+.gdrive-refresh-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.gdrive-refresh-btn-minimal {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.gdrive-refresh-btn-minimal:hover {
+    background: #667eea;
+    color: white;
+}
+
+.gdrive-refresh-btn-primary {
+    background: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.gdrive-refresh-btn-primary:hover {
+    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.gdrive-refresh-icon {
+    display: inline-block;
+    font-size: 18px;
+    transition: transform 0.6s ease;
+}
+
+.gdrive-refresh-btn.loading .gdrive-refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.gdrive-refresh-message {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 20px;
+}
+
+.gdrive-refresh-message.success {
+    color: #10b981;
+}
+
+.gdrive-refresh-message.error {
+    color: #ef4444;
+}
+
+/* Responsive para botón */
+@media (max-width: 768px) {
+    .gdrive-refresh-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
