@@ -1,0 +1,457 @@
+<div id="ept21-app" class="ept21" aria-live="polite">
+  <style>
+    .ept21{--bg:#f5f5f5;--card:#fff;--text:#202124;--muted:#5f6368;--line:#dadce0;--accent:#616161;--accent2:#424242;--ok:#1b5e20;--warn:#b26a00;--err:#b00020;max-width:900px;margin:16px auto;padding:12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+    .ept21 *{box-sizing:border-box}
+    .ept21 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .ept21 h2,.ept21 h3{margin:0 0 12px}
+    .ept21 p{margin:8px 0;line-height:1.45}
+    .ept21 .muted{color:var(--muted);font-size:.94rem}
+    .ept21 label{display:block;font-weight:600;margin:10px 0 6px}
+    .ept21 input[type="text"]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:16px}
+    .ept21 .check{display:flex;gap:8px;align-items:flex-start;margin:10px 0}
+    .ept21 .check input{margin-top:3px}
+    .ept21 button{appearance:none;border:0;background:var(--accent2);color:#fff;padding:11px 16px;border-radius:8px;font-weight:600;cursor:pointer}
+    .ept21 button:hover{background:#333}
+    .ept21 button[disabled]{opacity:.65;cursor:not-allowed}
+    .ept21 .topbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+    .ept21 .badge{padding:4px 8px;border-radius:999px;background:#eceff1;font-size:.84rem}
+    .ept21 .section-title{margin:20px 0 8px;padding-top:10px;border-top:1px dashed var(--line);font-size:1.05rem}
+    .ept21 fieldset{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+    .ept21 legend{padding:0 6px;font-weight:700}
+    .ept21 .option{display:flex;gap:8px;align-items:flex-start;margin:7px 0}
+    .ept21 .option label{font-weight:500;margin:0}
+    .ept21 .reading{background:#f7f7f7;border-left:4px solid #9e9e9e;padding:10px 12px;border-radius:8px;margin-bottom:8px}
+    .ept21 .error{color:var(--err);font-weight:600;margin-top:8px}
+    .ept21 .success{color:var(--ok);font-weight:700}
+    .ept21 .warning{color:var(--warn);font-weight:700}
+    .ept21 .grid{display:grid;grid-template-columns:1fr;gap:8px}
+    .ept21 .result{background:#fafafa;border:1px solid var(--line);padding:12px;border-radius:10px}
+    .ept21 .small{font-size:.9rem}
+    .ept21 .hp{position:absolute;left:-10000px;opacity:0;pointer-events:none}
+    @media (min-width:760px){.ept21{padding:18px}.ept21 .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  </style>
+
+  <div class="card" id="ept21-view"></div>
+
+  <script>
+    (function(){
+      'use strict';
+
+      // ===================== EMAIL CONFIGURATION =====================
+      // Set your EmailJS credentials here.
+      const EMAILJS_PUBLIC_KEY = '';   // e.g. "abc123_PUBLIC_KEY"
+      const EMAILJS_SERVICE_ID = '';   // e.g. "service_xxxxx"
+      const EMAILJS_TEMPLATE_ID = '';  // e.g. "template_xxxxx"
+      // ==============================================================
+
+      const DESTINATION_EMAIL = 'xfranquet@estudiemas.net';
+      const TEST_PREFIX = 'EPT21';
+      const TOTAL_SECONDS = 30 * 60;
+
+      const DATA = [
+        {id:1,section:'Grammar & Use',prompt:'She ___ from Colombia.',options:['are','is','am','be'],answer:'is'},
+        {id:2,section:'Grammar & Use',prompt:'I ___ coffee every morning.',options:['drink','drinks','drank','drinking'],answer:'drink'},
+        {id:3,section:'Grammar & Use',prompt:'Yesterday we ___ a movie at home.',options:['watch','watched','watching','watches'],answer:'watched'},
+        {id:4,section:'Grammar & Use',prompt:'There isn’t ___ milk left.',options:['many','few','much','several'],answer:'much'},
+        {id:5,section:'Grammar & Use',prompt:'She has lived here ___ 2019.',options:['since','for','during','from'],answer:'since'},
+        {id:6,section:'Grammar & Use',prompt:'If I ___ more time, I would travel.',options:['have','had','will have','am having'],answer:'had'},
+        {id:7,section:'Grammar & Use',prompt:'He didn’t come because he ___ sick.',options:['is','was','has been','will be'],answer:'was'},
+        {id:8,section:'Grammar & Use',prompt:'The report ___ by the team last week.',options:['completes','was completed','has completed','is completing'],answer:'was completed'},
+        {id:9,section:'Grammar & Use',prompt:'She speaks ___ than her sister.',options:['more confidently','most confidently','confident','confidence'],answer:'more confidently'},
+        {id:10,section:'Grammar & Use',prompt:'I wish I ___ more attention in class.',options:['pay','paid','had paid','would pay'],answer:'paid'},
+        {id:11,section:'Grammar & Use',prompt:'Not only ___ late, but he also forgot the documents.',options:['he arrived','did he arrive','he did arrive','arrived he'],answer:'did he arrive'},
+        {id:12,section:'Grammar & Use',prompt:'Had I known earlier, I ___ differently.',options:['act','acted','would act','would have acted'],answer:'would have acted'},
+        {id:13,section:'Vocabulary',prompt:'Closest meaning to “tired”:',options:['hungry','sleepy','exhausted','bored'],answer:'exhausted'},
+        {id:14,section:'Vocabulary',prompt:'She is responsible ___ organizing the event.',options:['of','for','to','with'],answer:'for'},
+        {id:15,section:'Vocabulary',prompt:'The results were ___ than expected.',options:['disappointing','disappointed','disappointment','disappointingly'],answer:'disappointing'},
+        {id:16,section:'Vocabulary',prompt:'The decision had serious ___ for the project.',options:['effects','affects','effect','affect'],answer:'effects'},
+        {id:17,section:'Vocabulary',prompt:'His explanation was clear but lacked ___.',options:['details','depth','examples','accuracy'],answer:'depth'},
+        {id:18,section:'Reading',reading:'“Many people believe learning a language is only about grammar. However, communication depends more on understanding meaning than on speaking perfectly.”',prompt:'Main idea?',options:['Grammar is unimportant','Perfect speaking is necessary','Meaning is central to communication','Languages are difficult'],answer:'Meaning is central to communication'},
+        {id:19,section:'Reading',reading:'“Online education has increased access to learning, but it also requires greater learner autonomy and discipline.”',prompt:'Challenge?',options:['Less access','Lower quality','More cost','Need for self-discipline'],answer:'Need for self-discipline'},
+        {id:20,section:'Reading',reading:'“Online education has increased access to learning, but it also requires greater learner autonomy and discipline.”',prompt:'“autonomy” means:',options:['freedom to decide independently','technology','isolation','motivation'],answer:'freedom to decide independently'},
+        {id:21,section:'Reading',reading:'“Online education has increased access to learning, but it also requires greater learner autonomy and discipline.”',prompt:'Author’s position:',options:['Online learning is better','Online learning is worse','Online learning has trade-offs','Online learning should be avoided'],answer:'Online learning has trade-offs'}
+      ];
+
+      const state = {
+        phase:'start',
+        accessCode:'',
+        testId:'',
+        startMs:0,
+        remaining:TOTAL_SECONDS,
+        timer:null,
+        timedOut:false,
+        focusLost:0,
+        orderedQuestions:[],
+        optionOrderByQ:{},
+        answers:{},
+        submitted:false,
+        score:null
+      };
+
+      const app = document.getElementById('ept21-view');
+      const root = document.getElementById('ept21-app');
+
+      const pad2 = n => String(n).padStart(2, '0');
+      const toLocalIsoLike = (d) => {
+        const tz = -d.getTimezoneOffset();
+        const sign = tz >= 0 ? '+' : '-';
+        const hh = pad2(Math.floor(Math.abs(tz) / 60));
+        const mm = pad2(Math.abs(tz) % 60);
+        return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}${sign}${hh}:${mm}`;
+      };
+      const randBase36 = (len) => Array.from({length:len}, () => Math.floor(Math.random()*36).toString(36)).join('');
+      const shuffle = (arr) => {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      };
+
+      function validateAccessCode(codeRaw){
+        const code = (codeRaw || '').trim().toUpperCase();
+        const rx = /^EM-(\d{8})-(\d{6})-([A-Z0-9]{4})-(\d{2})$/;
+        const m = code.match(rx);
+        if (!m) return {ok:false,error:'Invalid format. Use EM-YYYYMMDD-HHMMSS-RRRR-CC.'};
+
+        const date = m[1], time = m[2], rand = m[3], cc = m[4];
+        const y = +date.slice(0,4), mo = +date.slice(4,6), d = +date.slice(6,8);
+        const h = +time.slice(0,2), mi = +time.slice(2,4), s = +time.slice(4,6);
+        const dt = new Date(y, mo - 1, d, h, mi, s);
+        const validDate = dt.getFullYear() === y && dt.getMonth() === (mo - 1) && dt.getDate() === d && h < 24 && mi < 60 && s < 60;
+        if (!validDate) return {ok:false,error:'Invalid date or time in Access Code.'};
+
+        const payload = date + time + rand;
+        let sum = 0;
+        for (let i = 0; i < payload.length; i++) {
+          const ch = payload[i];
+          const val = /\d/.test(ch) ? +ch : (ch.charCodeAt(0) - 55);
+          sum += val * (i + 1);
+        }
+        const expected = String(sum % 97).padStart(2, '0');
+        if (cc !== expected) return {ok:false,error:'Access Code checksum is invalid.'};
+
+        return {ok:true,code};
+      }
+
+      function makeTestId(){
+        const now = new Date();
+        const date = `${now.getFullYear()}${pad2(now.getMonth()+1)}${pad2(now.getDate())}`;
+        const time = `${pad2(now.getHours())}${pad2(now.getMinutes())}${pad2(now.getSeconds())}`;
+        return `${TEST_PREFIX}-${date}-${time}-${randBase36(6).toUpperCase()}`;
+      }
+
+      function prepareQuestions(){
+        const grammar = shuffle(DATA.filter(q => q.id >= 1 && q.id <= 12));
+        const vocab = shuffle(DATA.filter(q => q.id >= 13 && q.id <= 17));
+        const reading = shuffle(DATA.filter(q => q.id >= 18 && q.id <= 21));
+        state.orderedQuestions = [...grammar, ...vocab, ...reading].map(q => {
+          const options = shuffle(q.options);
+          state.optionOrderByQ[q.id] = options.slice();
+          return {...q, displayOptions:options};
+        });
+      }
+
+      function calculateScore(){
+        let total = 0, grammar = 0, vocab = 0, reading = 0;
+        const detail = {};
+        DATA.forEach(q => {
+          const ans = state.answers[q.id] || null;
+          const correct = ans === q.answer;
+          if (correct) {
+            total++;
+            if (q.id <= 12) grammar++;
+            else if (q.id <= 17) vocab++;
+            else reading++;
+          }
+          detail[q.id] = {selected:ans,correct:q.answer,isCorrect:correct};
+        });
+        const percent = Math.round((total / 21) * 100);
+        const level = mapLevel(percent);
+        return {total,grammar,vocab,reading,percent,...level,detail};
+      }
+
+      function mapLevel(percent){
+        const bands = [
+          {name:'A1',min:0,max:29,feedback:'You can communicate with simple sentences. Strengthen basic grammar and everyday vocabulary.'},
+          {name:'A2',min:30,max:47,feedback:'You handle common situations. Keep building accuracy and reading confidence in longer texts.'},
+          {name:'B1',min:48,max:71,feedback:'You communicate independently in many contexts. Focus on complex structures and precision.'},
+          {name:'B2',min:72,max:85,feedback:'You use English effectively in varied situations. Continue refining advanced grammar and nuance.'},
+          {name:'C1',min:86,max:100,feedback:'You show strong command of English. Maintain depth, flexibility, and advanced range.'}
+        ];
+        const band = bands.find(b => percent >= b.min && percent <= b.max) || bands[0];
+        const width = band.max - band.min + 1;
+        const idx = percent - band.min;
+        const ratio = idx / width;
+        const sub = ratio < 1/3 ? '-' : (ratio < 2/3 ? '' : '+');
+        return {level:band.name,sublevel:sub,levelLabel:band.name + sub,feedback:band.feedback};
+      }
+
+      function lockTest(msg){
+        state.timedOut = true;
+        clearInterval(state.timer);
+        root.querySelectorAll('input, button').forEach(el => {
+          if (el.id !== 'ept21-restart') el.disabled = true;
+        });
+        const notice = root.querySelector('#ept21-timeout-msg');
+        if (notice) notice.textContent = msg || 'Time is over. Please restart.';
+      }
+
+      function startTimer(){
+        state.startMs = Date.now();
+        state.remaining = TOTAL_SECONDS;
+        clearInterval(state.timer);
+        state.timer = setInterval(() => {
+          state.remaining--;
+          const t = document.getElementById('ept21-timer');
+          if (t) {
+            const mm = pad2(Math.floor(Math.max(state.remaining,0)/60));
+            const ss = pad2(Math.max(state.remaining,0)%60);
+            t.textContent = `${mm}:${ss}`;
+          }
+          if (state.remaining <= 0) {
+            lockTest('Time is over. Please restart.');
+          }
+        }, 1000);
+      }
+
+      function getPayload(){
+        const score = state.score || calculateScore();
+        const spent = Math.min(TOTAL_SECONDS, Math.max(0, TOTAL_SECONDS - state.remaining));
+        return {
+          test_id: state.testId,
+          access_code: state.accessCode,
+          timestamp_local_iso: toLocalIsoLike(new Date()),
+          score_total: score.total,
+          score_grammar: score.grammar,
+          score_vocabulary: score.vocab,
+          score_reading: score.reading,
+          percent: score.percent,
+          level: score.level,
+          sublevel: score.sublevel,
+          level_label: score.levelLabel,
+          focus_lost_count: state.focusLost,
+          time_spent_seconds: spent,
+          randomized_question_order: state.orderedQuestions.map(q => q.id),
+          randomized_option_order: state.optionOrderByQ,
+          answers: state.answers,
+          answer_detail: score.detail
+        };
+      }
+
+      function payloadToText(payload){
+        return [
+          `TEST_ID: ${payload.test_id}`,
+          `ACCESS_CODE: ${payload.access_code}`,
+          `timestamp: ${payload.timestamp_local_iso}`,
+          `score_total: ${payload.score_total}/21 (${payload.percent}%)`,
+          `subscores: grammar=${payload.score_grammar}/12, vocabulary=${payload.score_vocabulary}/5, reading=${payload.score_reading}/4`,
+          `level: ${payload.level}${payload.sublevel}`,
+          `focus_lost_count: ${payload.focus_lost_count}`,
+          `time_spent_seconds: ${payload.time_spent_seconds}`,
+          `randomized_question_order: ${JSON.stringify(payload.randomized_question_order)}`,
+          `randomized_option_order: ${JSON.stringify(payload.randomized_option_order)}`,
+          `answers: ${JSON.stringify(payload.answers)}`,
+          `answer_detail: ${JSON.stringify(payload.answer_detail)}`
+        ].join('\n');
+      }
+
+      async function sendResultEmail(payload){
+        const subject = `EPT-21 | ${payload.test_id} | CODE:${payload.access_code} | ${payload.level}${payload.sublevel} | SCORE:${payload.score_total}/21`;
+        const body = payloadToText(payload);
+
+        const configured = EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && window.emailjs;
+        if (configured) {
+          try {
+            window.emailjs.init({publicKey: EMAILJS_PUBLIC_KEY});
+            await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+              to_email: DESTINATION_EMAIL,
+              subject,
+              message: body,
+              test_id: payload.test_id,
+              access_code: payload.access_code,
+              level: payload.level + payload.sublevel,
+              score: `${payload.score_total}/21`
+            });
+            return {ok:true,method:'emailjs'};
+          } catch (e) {
+            return {ok:false,method:'emailjs',error:e};
+          }
+        }
+        return {ok:false,method:'fallback',subject,body};
+      }
+
+      function renderStart(err){
+        app.innerHTML = `
+          <h2>English Placement Test (EPT-21)</h2>
+          <p class="muted">Fundación EstudieMás · 21 questions · 30 minutes · No personal data requested.</p>
+          <label for="ept21-code">Access Code</label>
+          <input id="ept21-code" type="text" inputmode="text" autocomplete="off" placeholder="EM-YYYYMMDD-HHMMSS-RRRR-CC" aria-describedby="ept21-code-help" />
+          <p id="ept21-code-help" class="small muted">Format and checksum are validated automatically.</p>
+
+          <div class="check">
+            <input id="ept21-consent-1" type="checkbox" />
+            <label for="ept21-consent-1">I accept the Terms and Privacy Policy.</label>
+          </div>
+          <div class="check">
+            <input id="ept21-consent-2" type="checkbox" />
+            <label for="ept21-consent-2">I consent to the processing of my data strictly for placement test administration (access code + test results).</label>
+          </div>
+
+          <div class="hp" aria-hidden="true">
+            <label for="ept21-company">Company</label>
+            <input id="ept21-company" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <button id="ept21-start">Start test</button>
+          <p class="error" id="ept21-error">${err ? err : ''}</p>
+        `;
+
+        document.getElementById('ept21-start').addEventListener('click', () => {
+          const hp = document.getElementById('ept21-company').value.trim();
+          if (hp) return;
+
+          const codeInput = document.getElementById('ept21-code').value;
+          const c1 = document.getElementById('ept21-consent-1').checked;
+          const c2 = document.getElementById('ept21-consent-2').checked;
+          if (!c1 || !c2) {
+            renderStart('Please accept both consent checkboxes to continue.');
+            return;
+          }
+          const validation = validateAccessCode(codeInput);
+          if (!validation.ok) {
+            renderStart(validation.error);
+            return;
+          }
+          state.accessCode = validation.code;
+          state.testId = makeTestId();
+          state.phase = 'test';
+          prepareQuestions();
+          renderTest();
+          startTimer();
+        });
+      }
+
+      function renderTest(){
+        const html = [];
+        html.push('<div class="topbar">');
+        html.push(`<span class="badge"><strong>TEST_ID:</strong> ${state.testId}</span>`);
+        html.push(`<span class="badge"><strong>Timer:</strong> <span id="ept21-timer">30:00</span></span>`);
+        html.push(`<span class="badge"><strong>Focus changes:</strong> <span id="ept21-focus">${state.focusLost}</span></span>`);
+        html.push('</div>');
+        html.push('<p class="muted">Answer all questions. You can submit at any time before the timer ends.</p>');
+
+        let currentSection = '';
+        state.orderedQuestions.forEach((q, idx) => {
+          if (q.section !== currentSection) {
+            currentSection = q.section;
+            html.push(`<h3 class="section-title">${q.section}</h3>`);
+          }
+          html.push(`<fieldset><legend>Q${idx + 1} (${q.section})</legend>`);
+          if (q.reading) html.push(`<div class="reading">${q.reading}</div>`);
+          html.push(`<p><strong>${q.prompt}</strong></p>`);
+          q.displayOptions.forEach((opt, oi) => {
+            const id = `q${q.id}_o${oi}`;
+            html.push(`<div class="option"><input type="radio" id="${id}" name="q_${q.id}" value="${escapeHtml(opt)}" /><label for="${id}">${escapeHtml(opt)}</label></div>`);
+          });
+          html.push('</fieldset>');
+        });
+
+        html.push('<p id="ept21-timeout-msg" class="warning"></p>');
+        html.push('<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="ept21-submit">Submit test</button><button id="ept21-restart" type="button">Restart</button></div>');
+        html.push('<p id="ept21-submit-msg" class="muted"></p>');
+        app.innerHTML = html.join('');
+
+        root.querySelectorAll('input[type="radio"]').forEach(r => {
+          r.addEventListener('change', (e) => {
+            const qid = +e.target.name.replace('q_', '');
+            state.answers[qid] = e.target.value;
+          });
+        });
+
+        document.getElementById('ept21-submit').addEventListener('click', async () => {
+          if (state.timedOut || state.submitted) return;
+
+          const answeredCount = Object.keys(state.answers).length;
+          if (answeredCount < 21) {
+            document.getElementById('ept21-submit-msg').textContent = `You have answered ${answeredCount}/21. Please complete all questions.`;
+            return;
+          }
+
+          state.score = calculateScore();
+          state.submitted = true;
+          clearInterval(state.timer);
+
+          const payload = getPayload();
+          const mail = await sendResultEmail(payload);
+          renderResult(payload, mail);
+        });
+
+        document.getElementById('ept21-restart').addEventListener('click', restart);
+      }
+
+      function renderResult(payload, mailStatus){
+        const subject = `EPT-21 | ${payload.test_id} | CODE:${payload.access_code} | ${payload.level}${payload.sublevel} | SCORE:${payload.score_total}/21`;
+        const body = payloadToText(payload);
+        const mailto = `mailto:${encodeURIComponent(DESTINATION_EMAIL)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        app.innerHTML = `
+          <h2>Placement Result</h2>
+          <div class="result">
+            <p><strong>Test indicator (TEST_ID):</strong> ${payload.test_id}</p>
+            <p><strong>Access code:</strong> ${payload.access_code}</p>
+            <p><strong>Total score:</strong> ${payload.score_total}/21 (${payload.percent}%)</p>
+            <p><strong>Subscores:</strong> Grammar ${payload.score_grammar}/12 · Vocabulary ${payload.score_vocabulary}/5 · Reading ${payload.score_reading}/4</p>
+            <p><strong>Assigned level:</strong> ${payload.level}${payload.sublevel}</p>
+            <p>${escapeHtml(state.score.feedback)}</p>
+            <p class="small muted">Focus changes: ${payload.focus_lost_count} · Time spent: ${payload.time_spent_seconds} seconds</p>
+          </div>
+
+          <div id="ept21-mail-status" class="small" style="margin-top:10px"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button id="ept21-restart" type="button">Start new attempt</button>
+            <a id="ept21-mailto" href="${mailto}" style="display:none;text-decoration:none"><button type="button">Send Result Email</button></a>
+          </div>
+        `;
+
+        const statusEl = document.getElementById('ept21-mail-status');
+        if (mailStatus.ok && mailStatus.method === 'emailjs') {
+          statusEl.innerHTML = '<span class="success">Result email sent successfully to xfranquet@estudiemas.net.</span>';
+        } else {
+          statusEl.innerHTML = '<span class="warning">EmailJS is not configured or failed. Use “Send Result Email” to send via your email client.</span>';
+          document.getElementById('ept21-mailto').style.display = 'inline-block';
+        }
+
+        document.getElementById('ept21-restart').addEventListener('click', restart);
+      }
+
+      function restart(){
+        clearInterval(state.timer);
+        Object.assign(state, {
+          phase:'start',accessCode:'',testId:'',startMs:0,remaining:TOTAL_SECONDS,timer:null,
+          timedOut:false,focusLost:0,orderedQuestions:[],optionOrderByQ:{},answers:{},submitted:false,score:null
+        });
+        renderStart('');
+      }
+
+      function escapeHtml(s){
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      root.addEventListener('contextmenu', e => e.preventDefault());
+      root.addEventListener('copy', e => e.preventDefault());
+      root.addEventListener('paste', e => e.preventDefault());
+      document.addEventListener('visibilitychange', () => {
+        if (state.phase === 'test' && document.hidden) {
+          state.focusLost += 1;
+          const f = document.getElementById('ept21-focus');
+          if (f) f.textContent = state.focusLost;
+        }
+      });
+
+      renderStart('');
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</div>
